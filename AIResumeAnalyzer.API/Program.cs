@@ -9,7 +9,7 @@ namespace AIResumeAnalyzer.API
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            // Add services to the container.
+            // Add services to the containers.
             builder.Services.AddControllers();
 
             builder.Services.AddEndpointsApiExplorer();
