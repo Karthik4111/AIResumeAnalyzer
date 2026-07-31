@@ -1,0 +1,55 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.14.36616.10 d17.14
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AIResumeAnalyzer.API", "AIResumeAnalyzer.API\AIResumeAnalyzer.API.csproj", "{2B472001-9114-4A7D-B284-070ACA1B50C5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AIResumeAnalyzer.Domain", "AIResumeAnalyzer.Domain\AIResumeAnalyzer.Domain.csproj", "{F52217B6-C8D1-4707-8504-B8AED98C4F05}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AIResumeAnalyzer.Application", "AIResumeAnalyzer.Application\AIResumeAnalyzer.Application.csproj", "{2287AD35-9AB7-4E92-A12E-FA7895A7B941}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AIResumeAnalyzer.Infrastructure", "AIResumeAnalyzer.Infrastructure\AIResumeAnalyzer.Infrastructure.csproj", "{72AE4C9E-8918-44E6-85DE-90421B842F63}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AIResumeAnalyzer.UnitTests", "AIResumeAnalyzer.UnitTests\AIResumeAnalyzer.UnitTests.csproj", "{5CEB7BD9-7CE1-4172-994B-46F28D6F3A84}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AIResumeAnalyzer.IntegrationTests", "AIResumeAnalyzer.IntegrationTests\AIResumeAnalyzer.IntegrationTests.csproj", "{797D592B-BA1D-4467-8037-9A70BEC5E99B}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{2B472001-9114-4A7D-B284-070ACA1B50C5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2B472001-9114-4A7D-B284-070ACA1B50C5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2B472001-9114-4A7D-B284-070ACA1B50C5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2B472001-9114-4A7D-B284-070ACA1B50C5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F52217B6-C8D1-4707-8504-B8AED98C4F05}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F52217B6-C8D1-4707-8504-B8AED98C4F05}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F52217B6-C8D1-4707-8504-B8AED98C4F05}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F52217B6-C8D1-4707-8504-B8AED98C4F05}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2287AD35-9AB7-4E92-A12E-FA7895A7B941}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2287AD35-9AB7-4E92-A12E-FA7895A7B941}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2287AD35-9AB7-4E92-A12E-FA7895A7B941}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2287AD35-9AB7-4E92-A12E-FA7895A7B941}.Release|Any CPU.Build.0 = Release|Any CPU
+		{72AE4C9E-8918-44E6-85DE-90421B842F63}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{72AE4C9E-8918-44E6-85DE-90421B842F63}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{72AE4C9E-8918-44E6-85DE-90421B842F63}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{72AE4C9E-8918-44E6-85DE-90421B842F63}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5CEB7BD9-7CE1-4172-994B-46F28D6F3A84}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5CEB7BD9-7CE1-4172-994B-46F28D6F3A84}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5CEB7BD9-7CE1-4172-994B-46F28D6F3A84}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5CEB7BD9-7CE1-4172-994B-46F28D6F3A84}.Release|Any CPU.Build.0 = Release|Any CPU
+		{797D592B-BA1D-4467-8037-9A70BEC5E99B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{797D592B-BA1D-4467-8037-9A70BEC5E99B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{797D592B-BA1D-4467-8037-9A70BEC5E99B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{797D592B-BA1D-4467-8037-9A70BEC5E99B}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {B96E02A8-4002-4D13-BE2B-AA8779A43175}
+	EndGlobalSection
+EndGlobal
