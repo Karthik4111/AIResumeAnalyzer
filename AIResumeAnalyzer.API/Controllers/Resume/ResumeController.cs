@@ -69,4 +69,26 @@ public class ResumeController : ControllerBase
             file.ContentType,
             file.FileName);
     }
+
+    [HttpPost("{id:guid}/version")]
+    public async Task<IActionResult> UploadVersion(
+    Guid id,
+    [FromForm] UploadResumeVersionRequest request)
+    {
+        var response =
+            await _resumeService.UploadVersionAsync(id, request);
+
+        return Ok(response);
+    }
+
+
+    [HttpGet("dashboard")]
+    public async Task<IActionResult> Dashboard()
+    {
+        var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+
+        var result = await _resumeService.GetDashboardAsync(userId);
+
+        return Ok(result);
+    }
 }

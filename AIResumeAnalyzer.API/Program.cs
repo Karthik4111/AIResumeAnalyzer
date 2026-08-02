@@ -1,9 +1,11 @@
+using AIResumeAnalyzer.API.Middleware;
 using AIResumeAnalyzer.Application;
 using AIResumeAnalyzer.Application.Interfaces.Auth;
 using AIResumeAnalyzer.Domain.Common;
 using AIResumeAnalyzer.Infrastructure;
 using AIResumeAnalyzer.Infrastructure.Services.Auth;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using AIResumeAnalyzer.API.Middleware;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Security.Claims;
@@ -137,6 +139,7 @@ namespace AIResumeAnalyzer.API
                 app.UseSwaggerUI();
             }
 
+            app.UseGlobalExceptionHandler();
             app.UseHttpsRedirection();
 
             app.UseAuthentication();

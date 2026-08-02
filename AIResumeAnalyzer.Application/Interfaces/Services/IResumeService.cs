@@ -15,4 +15,9 @@ public interface IResumeService
     Task DeleteAsync(Guid resumeId);
 
     Task<(byte[] FileBytes, string FileName, string ContentType)> DownloadAsync(Guid resumeId);
+
+    Task<List<ResumeDashboardResponse>> GetDashboardAsync(Guid userId);
+
+    Task<ResumeResponse> UploadVersionAsync(Guid resumeId,UploadResumeVersionRequest request);
+
 }

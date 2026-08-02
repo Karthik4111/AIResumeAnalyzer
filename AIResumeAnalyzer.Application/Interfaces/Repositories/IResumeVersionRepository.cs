@@ -7,4 +7,5 @@ public interface IResumeVersionRepository: IGenericRepository<ResumeVersion>
     Task<int> GetLatestVersionNumberAsync(Guid resumeId);
 
     Task<ResumeVersion?> GetLatestVersionAsync(Guid resumeId);
+
 }

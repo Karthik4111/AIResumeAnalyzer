@@ -26,7 +26,6 @@
   <ItemGroup>
     <Folder Include="Configurations\" />
     <Folder Include="Extensions\" />
-    <Folder Include="Middlewares\" />
   </ItemGroup>
 
 </Project>

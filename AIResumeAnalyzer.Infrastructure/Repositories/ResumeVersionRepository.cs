@@ -13,11 +13,13 @@ public class ResumeVersionRepository: GenericRepository<ResumeVersion>, IResumeV
 
     public async Task<int> GetLatestVersionNumberAsync(Guid resumeId)
     {
-        return await _context.ResumeVersions
+        var latestVersion = await _context.ResumeVersions
             .Where(x => x.ResumeId == resumeId)
-            .Select(x => x.VersionNumber)
-            .DefaultIfEmpty(0)
-            .MaxAsync();
+            .OrderByDescending(x => x.VersionNumber)
+            .Select(x => (int?)x.VersionNumber)
+            .FirstOrDefaultAsync();
+
+        return latestVersion ?? 0;
     }
 
     public async Task<ResumeVersion?> GetLatestVersionAsync(Guid resumeId)

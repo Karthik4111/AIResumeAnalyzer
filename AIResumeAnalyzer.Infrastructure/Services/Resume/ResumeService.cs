@@ -184,4 +184,109 @@ public class ResumeService : IResumeService
 
         return (bytes, version.FileName, contentType);
     }
+
+
+    public async Task<ResumeResponse> UploadVersionAsync(
+    Guid resumeId,
+    UploadResumeVersionRequest request)
+    {
+        // Check Resume exists
+        var resume = await _resumeRepository.GetByIdAsync(resumeId);
+
+        if (resume == null)
+            throw new Exception("Resume not found.");
+
+        // Validate file
+        if (request.Resume == null || request.Resume.Length == 0)
+            throw new Exception("Please select a resume.");
+
+        var extension = Path.GetExtension(request.Resume.FileName).ToLower();
+
+        if (extension != ".pdf" && extension != ".docx")
+            throw new Exception("Only PDF and DOCX files are allowed.");
+
+        const long maxFileSize = 5 * 1024 * 1024;
+
+        if (request.Resume.Length > maxFileSize)
+            throw new Exception("Maximum file size is 5 MB.");
+
+        // Upload folder
+        var uploadsFolder = Path.Combine(
+            Directory.GetCurrentDirectory(),
+            "Uploads",
+            "Resumes");
+
+        if (!Directory.Exists(uploadsFolder))
+        {
+            Directory.CreateDirectory(uploadsFolder);
+        }
+
+        // Unique filename
+        var uniqueFileName = $"{Guid.NewGuid()}{extension}";
+
+        var filePath = Path.Combine(
+            uploadsFolder,
+            uniqueFileName);
+
+        // Save physical file
+        using (var stream = new FileStream(filePath, FileMode.Create))
+        {
+            await request.Resume.CopyToAsync(stream);
+        }
+
+        // Next version number
+        var latestVersion =
+            await _resumeVersionRepository
+                .GetLatestVersionNumberAsync(resumeId);
+
+        latestVersion++;
+
+        // Create ResumeVersion
+        var resumeVersion =
+            new AIResumeAnalyzer.Domain.Entities.ResumeVersion
+            {
+                Id = Guid.NewGuid(),
+                ResumeId = resumeId,
+                VersionNumber = latestVersion,
+                FileName = request.Resume.FileName,
+                FilePath = filePath,
+                ExtractedText = string.Empty,
+                CreatedOnUtc = DateTime.UtcNow
+            };
+
+        await _resumeVersionRepository.AddAsync(resumeVersion);
+
+        await _unitOfWork.SaveChangesAsync();
+
+        return new ResumeResponse
+        {
+            Id = resumeId,
+            FileName = resumeVersion.FileName,
+            Status = resume.Status.ToString(),
+            Version = resumeVersion.VersionNumber,
+            UploadedOn = resumeVersion.CreatedOnUtc
+        };
+    }
+
+    public async Task<List<ResumeDashboardResponse>> GetDashboardAsync(Guid userId)
+    {
+        var resumes = await _resumeRepository.GetByUserIdAsync(userId);
+
+        return resumes.Select(r =>
+        {
+            var latestVersion = r.Versions
+                .OrderByDescending(v => v.VersionNumber)
+                .FirstOrDefault();
+
+            return new ResumeDashboardResponse
+            {
+                Id = r.Id,
+                Title = r.Title,
+                LatestVersion = latestVersion?.VersionNumber ?? 0,
+                Status = r.Status.ToString(),
+                UploadedOn = latestVersion?.CreatedOnUtc ?? r.CreatedOnUtc
+            };
+        }).ToList();
+    }
+
 }
