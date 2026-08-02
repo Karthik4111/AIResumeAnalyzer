@@ -5,6 +5,8 @@ using AIResumeAnalyzer.Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using AIResumeAnalyzer.Application.Interfaces.Services;
+using AIResumeAnalyzer.Infrastructure.Services.Resume;
 
 namespace AIResumeAnalyzer.Infrastructure;
 
@@ -24,6 +26,12 @@ public static class DependencyInjection
         services.AddScoped<IRoleRepository, RoleRepository>();
 
         services.AddScoped<IUnitOfWork, UnitOfWork>();
+
+        services.AddScoped<IResumeService, ResumeService>();
+
+        services.AddScoped<IResumeRepository, ResumeRepository>();
+
+        services.AddScoped<IResumeVersionRepository, ResumeVersionRepository>();
 
         return services;
     }
