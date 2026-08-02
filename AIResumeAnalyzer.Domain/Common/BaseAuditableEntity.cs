@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace AIResumeAnalyzer.Domain.Common;
+﻿using AIResumeAnalyzer.Domain.Common;
 
 public abstract class BaseAuditableEntity : BaseEntity
 {
@@ -15,4 +9,11 @@ public abstract class BaseAuditableEntity : BaseEntity
     public DateTime? ModifiedOnUtc { get; set; }
 
     public string? ModifiedBy { get; set; }
+
+    // NEW
+    public bool IsDeleted { get; set; }
+
+    public DateTime? DeletedOnUtc { get; set; }
+
+    public string? DeletedBy { get; set; }
 }

@@ -29,6 +29,6 @@ public class ResumeVersionConfiguration : IEntityTypeConfiguration<ResumeVersion
         builder.HasMany(r => r.ATSReports)
                .WithOne(a => a.ResumeVersion)
                .HasForeignKey(a => a.ResumeVersionId)
-               .OnDelete(DeleteBehavior.Cascade);
+               .OnDelete(DeleteBehavior.Restrict);
     }
 }

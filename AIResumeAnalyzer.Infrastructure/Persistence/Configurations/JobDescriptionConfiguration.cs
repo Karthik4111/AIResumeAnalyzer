@@ -27,7 +27,7 @@ public class JobDescriptionConfiguration : IEntityTypeConfiguration<JobDescripti
         builder.HasOne(x => x.User)
                .WithMany(u => u.JobDescriptions)
                .HasForeignKey(x => x.UserId)
-               .OnDelete(DeleteBehavior.Cascade);
+               .OnDelete(DeleteBehavior.Restrict);
 
         builder.HasMany(x => x.ATSReports)
                .WithOne(a => a.JobDescription)
