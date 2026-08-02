@@ -1,4 +1,4 @@
-namespace AIResumeAnalyzer.API.Configurations;
+namespace AIResumeAnalyzer.Domain.Common;
 
 public class JwtOptions
 {

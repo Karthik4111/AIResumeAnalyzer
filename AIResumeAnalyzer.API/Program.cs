@@ -1,10 +1,12 @@
-using AIResumeAnalyzer.API.Configurations;
 using AIResumeAnalyzer.Application;
 using AIResumeAnalyzer.Application.Interfaces.Auth;
+using AIResumeAnalyzer.Domain.Common;
 using AIResumeAnalyzer.Infrastructure;
 using AIResumeAnalyzer.Infrastructure.Services.Auth;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
+using System.Security.Claims;
 using System.Text;
 
 namespace AIResumeAnalyzer.API
@@ -20,7 +22,40 @@ namespace AIResumeAnalyzer.API
 
             // Swagger
             builder.Services.AddEndpointsApiExplorer();
-            builder.Services.AddSwaggerGen();
+            builder.Services.AddSwaggerGen(options =>
+            {
+                options.SwaggerDoc("v1", new OpenApiInfo
+                {
+                    Title = "AI Resume Analyzer API",
+                    Version = "v1"
+                });
+
+                var jwtSecurityScheme = new OpenApiSecurityScheme
+                {
+                    BearerFormat = "JWT",
+                    Name = "Authorization",
+                    In = ParameterLocation.Header,
+                    Type = SecuritySchemeType.Http,
+                    Scheme = "bearer",
+                    Description = "Enter JWT Bearer token",
+
+                    Reference = new OpenApiReference
+                    {
+                        Id = "Bearer",
+                        Type = ReferenceType.SecurityScheme
+                    }
+                };
+
+                options.AddSecurityDefinition("Bearer", jwtSecurityScheme);
+
+                options.AddSecurityRequirement(new OpenApiSecurityRequirement
+                {
+                    {
+                        jwtSecurityScheme,
+                        Array.Empty<string>()
+                    }
+                });
+            });
 
             // Register Application & Infrastructure
             builder.Services.AddApplication();
@@ -30,6 +65,20 @@ namespace AIResumeAnalyzer.API
             builder.Services.Configure<JwtOptions>(
                 builder.Configuration.GetSection(JwtOptions.SectionName));
 
+            // DEBUG - Verify JWT Configuration
+            var jwtConfig = builder.Configuration
+                .GetSection(JwtOptions.SectionName)
+                .Get<JwtOptions>();
+
+            Console.WriteLine("======================================");
+            Console.WriteLine("JWT Configuration");
+            Console.WriteLine("======================================");
+            Console.WriteLine($"Issuer     : {jwtConfig?.Issuer}");
+            Console.WriteLine($"Audience   : {jwtConfig?.Audience}");
+            Console.WriteLine($"Secret Key : {jwtConfig?.SecretKey}");
+            Console.WriteLine($"Expiry     : {jwtConfig?.ExpiryMinutes}");
+            Console.WriteLine("======================================");
+
             // Dependency Injection
             builder.Services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
             builder.Services.AddScoped<IPasswordHasher, PasswordHasher>();
@@ -37,28 +86,34 @@ namespace AIResumeAnalyzer.API
 
             // JWT Authentication
             builder.Services
-                .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-                .AddJwtBearer(options =>
-                {
-                    var jwt = builder.Configuration
-                        .GetSection(JwtOptions.SectionName)
-                        .Get<JwtOptions>()!;
+    .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        var jwt = builder.Configuration
+            .GetSection(JwtOptions.SectionName)
+            .Get<JwtOptions>()!;
 
-                    options.TokenValidationParameters = new TokenValidationParameters
-                    {
-                        ValidateIssuer = true,
-                        ValidateAudience = true,
-                        ValidateLifetime = true,
-                        ValidateIssuerSigningKey = true,
+        options.RequireHttpsMetadata = false;
+        options.SaveToken = true;
 
-                        ValidIssuer = jwt.Issuer,
-                        ValidAudience = jwt.Audience,
-                        IssuerSigningKey = new SymmetricSecurityKey(
-                            Encoding.UTF8.GetBytes(jwt.SecretKey)),
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
 
-                        ClockSkew = TimeSpan.Zero
-                    };
-                });
+            ValidIssuer = jwt.Issuer,
+            ValidAudience = jwt.Audience,
+            IssuerSigningKey = new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes(jwt.SecretKey)),
+
+            ClockSkew = TimeSpan.Zero,
+
+            NameClaimType = ClaimTypes.Name,
+            RoleClaimType = ClaimTypes.Role
+        };
+    });
 
             // Authorization Policies
             builder.Services.AddAuthorization(options =>

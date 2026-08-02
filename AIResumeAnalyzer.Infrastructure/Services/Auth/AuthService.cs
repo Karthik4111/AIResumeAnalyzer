@@ -30,19 +30,26 @@ public class AuthService : IAuthService
 
     public async Task<AuthResponse> RegisterAsync(RegisterRequest request)
     {
-        // Check if email already exists
+        // Check whether the email already exists
         var existingUser = await _userRepository.GetByEmailAsync(request.Email);
 
         if (existingUser != null)
-            throw new Exception("Email already exists.");
+            throw new Exception("User already exists.");
 
         // Get default role
-        var role = await _roleRepository.GetByRoleNameAsync("Candidate");
+        var allRoles = await _roleRepository.GetAllAsync();
+
+        var role = allRoles.FirstOrDefault(r => r.Name == "Candidate");
 
         if (role == null)
-            throw new Exception("Default role not found.");
+        {
+            throw new Exception($"Roles Count = {allRoles.Count()}");
+        }
 
-        // Create user
+        if (role == null)
+            throw new Exception("Candidate role not found.");
+
+        // Create User
         var user = new User
         {
             Id = Guid.NewGuid(),
@@ -50,14 +57,15 @@ public class AuthService : IAuthService
             LastName = request.LastName,
             Email = request.Email,
             PasswordHash = _passwordHasher.HashPassword(request.Password),
+
             RoleId = role.Id,
             Role = role,
+
             CreatedOnUtc = DateTime.UtcNow
         };
 
         await _userRepository.AddAsync(user);
 
-        // Save changes (we'll wire this properly in the next step)
         await _unitOfWork.SaveChangesAsync();
 
         var token = _jwtTokenGenerator.GenerateToken(user);
@@ -65,7 +73,8 @@ public class AuthService : IAuthService
         return new AuthResponse
         {
             Token = token,
-            ExpiresAt = DateTime.UtcNow.AddHours(1),
+            ExpiresAt = DateTime.UtcNow.AddMinutes(60),
+
             FirstName = user.FirstName,
             LastName = user.LastName,
             Email = user.Email,
@@ -75,6 +84,32 @@ public class AuthService : IAuthService
 
     public async Task<AuthResponse> LoginAsync(LoginRequest request)
     {
-        throw new NotImplementedException();
+        // Find user by email
+        var user = await _userRepository.GetByEmailAsync(request.Email);
+
+        if (user == null)
+            throw new Exception("Invalid email or password.");
+
+        // Verify password
+        bool isValid = _passwordHasher.VerifyPassword(
+            request.Password,
+            user.PasswordHash);
+
+        if (!isValid)
+            throw new Exception("Invalid email or password.");
+
+        // Generate JWT
+        var token = _jwtTokenGenerator.GenerateToken(user);
+
+        return new AuthResponse
+        {
+            Token = token,
+            ExpiresAt = DateTime.UtcNow.AddMinutes(60),
+
+            FirstName = user.FirstName,
+            LastName = user.LastName,
+            Email = user.Email,
+            Role = user.Role.Name
+        };
     }
 }
