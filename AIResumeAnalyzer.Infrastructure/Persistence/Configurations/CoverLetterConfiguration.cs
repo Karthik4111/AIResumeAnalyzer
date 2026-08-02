@@ -1,12 +1,19 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using AIResumeAnalyzer.Domain.Entities;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace AIResumeAnalyzer.Infrastructure.Persistence.Configurations
+namespace AIResumeAnalyzer.Infrastructure.Persistence.Configurations;
+
+public class CoverLetterConfiguration : IEntityTypeConfiguration<CoverLetter>
 {
-    internal class CoverLetterConfiguration
+    public void Configure(EntityTypeBuilder<CoverLetter> builder)
     {
+        builder.ToTable("CoverLetters");
+
+        builder.HasKey(x => x.Id);
+
+        builder.Property(x => x.Content)
+               .HasColumnType("nvarchar(max)")
+               .IsRequired();
     }
 }
