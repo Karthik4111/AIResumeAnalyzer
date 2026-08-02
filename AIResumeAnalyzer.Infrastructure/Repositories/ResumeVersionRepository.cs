@@ -7,8 +7,7 @@ namespace AIResumeAnalyzer.Infrastructure.Repositories;
 
 public class ResumeVersionRepository: GenericRepository<ResumeVersion>, IResumeVersionRepository
 {
-    public ResumeVersionRepository(ApplicationDbContext context)
-        : base(context)
+    public ResumeVersionRepository(ApplicationDbContext context): base(context)
     {
     }
 
@@ -19,5 +18,13 @@ public class ResumeVersionRepository: GenericRepository<ResumeVersion>, IResumeV
             .Select(x => x.VersionNumber)
             .DefaultIfEmpty(0)
             .MaxAsync();
+    }
+
+    public async Task<ResumeVersion?> GetLatestVersionAsync(Guid resumeId)
+    {
+        return await _context.ResumeVersions
+            .Where(v => v.ResumeId == resumeId)
+            .OrderByDescending(v => v.VersionNumber)
+            .FirstOrDefaultAsync();
     }
 }

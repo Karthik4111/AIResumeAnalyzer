@@ -13,4 +13,6 @@ public interface IResumeService
     Task<ResumeResponse?> GetByIdAsync(Guid resumeId);
 
     Task DeleteAsync(Guid resumeId);
+
+    Task<(byte[] FileBytes, string FileName, string ContentType)> DownloadAsync(Guid resumeId);
 }

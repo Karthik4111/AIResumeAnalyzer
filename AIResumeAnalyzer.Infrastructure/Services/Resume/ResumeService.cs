@@ -160,4 +160,28 @@ public class ResumeService : IResumeService
 
         await _unitOfWork.SaveChangesAsync();
     }
+
+    public async Task<(byte[] FileBytes, string FileName, string ContentType)> DownloadAsync (Guid resumeId)
+    {
+        var version = await _resumeVersionRepository.GetLatestVersionAsync(resumeId);
+
+        if (version == null)
+            throw new Exception("Resume not found.");
+
+        if (!File.Exists(version.FilePath))
+            throw new Exception("Resume file not found.");
+
+        var bytes = await File.ReadAllBytesAsync(version.FilePath);
+
+        var extension = Path.GetExtension(version.FileName).ToLower();
+
+        var contentType = extension switch
+        {
+            ".pdf" => "application/pdf",
+            ".docx" => "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            _ => "application/octet-stream"
+        };
+
+        return (bytes, version.FileName, contentType);
+    }
 }

@@ -58,4 +58,15 @@ public class ResumeController : ControllerBase
 
         return NoContent();
     }
+
+    [HttpGet("download/{id:guid}")]
+    public async Task<IActionResult> Download(Guid id)
+    {
+        var file = await _resumeService.DownloadAsync(id);
+
+        return File(
+            file.FileBytes,
+            file.ContentType,
+            file.FileName);
+    }
 }
