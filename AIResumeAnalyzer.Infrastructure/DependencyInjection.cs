@@ -1,4 +1,7 @@
+using AIResumeAnalyzer.Application.Interfaces.Persistence;
+using AIResumeAnalyzer.Application.Interfaces.Repositories;
 using AIResumeAnalyzer.Infrastructure.Persistence;
+using AIResumeAnalyzer.Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -13,6 +16,14 @@ public static class DependencyInjection
         {
             options.UseSqlServer(configuration.GetConnectionString("DefaultConnection"));
         });
+
+        services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
+
+        services.AddScoped<IUserRepository, UserRepository>();
+
+        services.AddScoped<IRoleRepository, RoleRepository>();
+
+        services.AddScoped<IUnitOfWork, UnitOfWork>();
 
         return services;
     }
