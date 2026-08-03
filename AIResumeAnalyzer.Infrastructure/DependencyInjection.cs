@@ -7,6 +7,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using AIResumeAnalyzer.Application.Interfaces.Services;
 using AIResumeAnalyzer.Infrastructure.Services.Resume;
+using AIResumeAnalyzer.Application.Interfaces.ResumeParsing;
+using AIResumeAnalyzer.Infrastructure.Services.ResumeParsing;
 
 namespace AIResumeAnalyzer.Infrastructure;
 
@@ -32,6 +34,8 @@ public static class DependencyInjection
         services.AddScoped<IResumeRepository, ResumeRepository>();
 
         services.AddScoped<IResumeVersionRepository, ResumeVersionRepository>();
+
+        services.AddScoped<IResumeParserService, ResumeParserService>();
 
         return services;
     }

@@ -1,6 +1,7 @@
 ﻿using AIResumeAnalyzer.Application.DTOs.Resume;
 using AIResumeAnalyzer.Application.Interfaces.Persistence;
 using AIResumeAnalyzer.Application.Interfaces.Repositories;
+using AIResumeAnalyzer.Application.Interfaces.ResumeParsing;
 using AIResumeAnalyzer.Application.Interfaces.Services;
 using AIResumeAnalyzer.Domain.Enums;
 
@@ -11,14 +12,17 @@ public class ResumeService : IResumeService
     private readonly IResumeRepository _resumeRepository;
     private readonly IResumeVersionRepository _resumeVersionRepository;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IResumeParserService _resumeParserService;
 
     public ResumeService(
         IResumeRepository resumeRepository,
         IResumeVersionRepository resumeVersionRepository,
+        IResumeParserService resumeParserService,
         IUnitOfWork unitOfWork)
     {
         _resumeRepository = resumeRepository;
         _resumeVersionRepository = resumeVersionRepository;
+        _resumeParserService = resumeParserService;
         _unitOfWork = unitOfWork;
     }
 
@@ -30,19 +34,17 @@ public class ResumeService : IResumeService
         if (request.Resume == null || request.Resume.Length == 0)
             throw new Exception("Please select a resume.");
 
-        // Validate extension
         var extension = Path.GetExtension(request.Resume.FileName).ToLower();
 
         if (extension != ".pdf" && extension != ".docx")
             throw new Exception("Only PDF and DOCX files are allowed.");
 
-        // Validate file size (5 MB)
         const long maxFileSize = 5 * 1024 * 1024;
 
         if (request.Resume.Length > maxFileSize)
             throw new Exception("Maximum file size is 5 MB.");
 
-        // Create Upload folder
+        // Create upload folder
         var uploadsFolder = Path.Combine(
             Directory.GetCurrentDirectory(),
             "Uploads",
@@ -53,18 +55,18 @@ public class ResumeService : IResumeService
             Directory.CreateDirectory(uploadsFolder);
         }
 
-        // Generate unique filename
-        var uniqueFileName = $"{Guid.NewGuid()}{extension}";
-
-        var filePath = Path.Combine(
-            uploadsFolder,
-            uniqueFileName);
-
         // Save physical file
+        var uniqueFileName = $"{Guid.NewGuid()}{extension}";
+        var filePath = Path.Combine(uploadsFolder, uniqueFileName);
+
         using (var stream = new FileStream(filePath, FileMode.Create))
         {
             await request.Resume.CopyToAsync(stream);
         }
+
+        // Extract text
+        var extractedText =
+            await _resumeParserService.ExtractTextAsync(filePath);
 
         // Create Resume
         var resume = new AIResumeAnalyzer.Domain.Entities.Resume
@@ -86,16 +88,14 @@ public class ResumeService : IResumeService
             VersionNumber = 1,
             FileName = request.Resume.FileName,
             FilePath = filePath,
-            ExtractedText = string.Empty,
+            ExtractedText = extractedText,
             CreatedOnUtc = DateTime.UtcNow
         };
 
         await _resumeVersionRepository.AddAsync(resumeVersion);
 
-        // Save transaction
         await _unitOfWork.SaveChangesAsync();
 
-        // Return response
         return new ResumeResponse
         {
             Id = resume.Id,
@@ -161,7 +161,7 @@ public class ResumeService : IResumeService
         await _unitOfWork.SaveChangesAsync();
     }
 
-    public async Task<(byte[] FileBytes, string FileName, string ContentType)> DownloadAsync (Guid resumeId)
+    public async Task<(byte[] FileBytes, string FileName, string ContentType)> DownloadAsync(Guid resumeId)
     {
         var version = await _resumeVersionRepository.GetLatestVersionAsync(resumeId);
 
@@ -185,18 +185,15 @@ public class ResumeService : IResumeService
         return (bytes, version.FileName, contentType);
     }
 
-
     public async Task<ResumeResponse> UploadVersionAsync(
-    Guid resumeId,
-    UploadResumeVersionRequest request)
+        Guid resumeId,
+        UploadResumeVersionRequest request)
     {
-        // Check Resume exists
         var resume = await _resumeRepository.GetByIdAsync(resumeId);
 
         if (resume == null)
             throw new Exception("Resume not found.");
 
-        // Validate file
         if (request.Resume == null || request.Resume.Length == 0)
             throw new Exception("Please select a resume.");
 
@@ -210,7 +207,6 @@ public class ResumeService : IResumeService
         if (request.Resume.Length > maxFileSize)
             throw new Exception("Maximum file size is 5 MB.");
 
-        // Upload folder
         var uploadsFolder = Path.Combine(
             Directory.GetCurrentDirectory(),
             "Uploads",
@@ -221,38 +217,33 @@ public class ResumeService : IResumeService
             Directory.CreateDirectory(uploadsFolder);
         }
 
-        // Unique filename
         var uniqueFileName = $"{Guid.NewGuid()}{extension}";
+        var filePath = Path.Combine(uploadsFolder, uniqueFileName);
 
-        var filePath = Path.Combine(
-            uploadsFolder,
-            uniqueFileName);
-
-        // Save physical file
         using (var stream = new FileStream(filePath, FileMode.Create))
         {
             await request.Resume.CopyToAsync(stream);
         }
 
-        // Next version number
+        // Extract text
+        var extractedText =
+            await _resumeParserService.ExtractTextAsync(filePath);
+
         var latestVersion =
-            await _resumeVersionRepository
-                .GetLatestVersionNumberAsync(resumeId);
+            await _resumeVersionRepository.GetLatestVersionNumberAsync(resumeId);
 
         latestVersion++;
 
-        // Create ResumeVersion
-        var resumeVersion =
-            new AIResumeAnalyzer.Domain.Entities.ResumeVersion
-            {
-                Id = Guid.NewGuid(),
-                ResumeId = resumeId,
-                VersionNumber = latestVersion,
-                FileName = request.Resume.FileName,
-                FilePath = filePath,
-                ExtractedText = string.Empty,
-                CreatedOnUtc = DateTime.UtcNow
-            };
+        var resumeVersion = new AIResumeAnalyzer.Domain.Entities.ResumeVersion
+        {
+            Id = Guid.NewGuid(),
+            ResumeId = resumeId,
+            VersionNumber = latestVersion,
+            FileName = request.Resume.FileName,
+            FilePath = filePath,
+            ExtractedText = extractedText,
+            CreatedOnUtc = DateTime.UtcNow
+        };
 
         await _resumeVersionRepository.AddAsync(resumeVersion);
 
@@ -288,5 +279,4 @@ public class ResumeService : IResumeService
             };
         }).ToList();
     }
-
 }
