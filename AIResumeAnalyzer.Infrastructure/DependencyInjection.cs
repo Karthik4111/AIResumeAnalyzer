@@ -9,6 +9,8 @@ using AIResumeAnalyzer.Application.Interfaces.Services;
 using AIResumeAnalyzer.Infrastructure.Services.Resume;
 using AIResumeAnalyzer.Application.Interfaces.ResumeParsing;
 using AIResumeAnalyzer.Infrastructure.Services.ResumeParsing;
+using AIResumeAnalyzer.Application.Interfaces.ATS;
+using AIResumeAnalyzer.Infrastructure.Services.ATS;
 
 namespace AIResumeAnalyzer.Infrastructure;
 
@@ -36,6 +38,10 @@ public static class DependencyInjection
         services.AddScoped<IResumeVersionRepository, ResumeVersionRepository>();
 
         services.AddScoped<IResumeParserService, ResumeParserService>();
+
+        services.AddScoped<IATSService, ATSService>();
+
+        services.AddScoped<IATSReportRepository, ATSReportRepository>();
 
         return services;
     }
