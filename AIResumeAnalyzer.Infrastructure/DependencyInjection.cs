@@ -56,6 +56,8 @@ public static class DependencyInjection
             client.BaseAddress = new Uri("http://localhost:11434/");
         });
 
+        services.AddScoped<IInterviewQuestionRepository, InterviewQuestionRepository>();
+
         return services;
     }
 }
