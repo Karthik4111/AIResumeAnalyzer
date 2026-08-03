@@ -10,5 +10,5 @@ public class ATSAnalysisRequest
 {
     public Guid ResumeId { get; set; }
 
-    public string JobDescription { get; set; } = string.Empty;
+    public Guid JobDescriptionId { get; set; }
 }

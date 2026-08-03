@@ -1,5 +1,6 @@
 ﻿using AIResumeAnalyzer.Application.DTOs.ATS;
 using AIResumeAnalyzer.Application.Interfaces.ATS;
+using AIResumeAnalyzer.Application.Interfaces.Persistence;
 using AIResumeAnalyzer.Application.Interfaces.Repositories;
 using AIResumeAnalyzer.Domain.Entities;
 
@@ -8,10 +9,20 @@ namespace AIResumeAnalyzer.Infrastructure.Services.ATS;
 public class ATSService : IATSService
 {
     private readonly IResumeRepository _resumeRepository;
+    private readonly IJobDescriptionRepository _jobDescriptionRepository;
+    private readonly IATSReportRepository _atsReportRepository;
+    private readonly IUnitOfWork _unitOfWork;
 
-    public ATSService(IResumeRepository resumeRepository)
+    public ATSService(
+    IResumeRepository resumeRepository,
+    IJobDescriptionRepository jobDescriptionRepository,
+    IATSReportRepository atsReportRepository,
+    IUnitOfWork unitOfWork)
     {
         _resumeRepository = resumeRepository;
+        _jobDescriptionRepository = jobDescriptionRepository;
+        _atsReportRepository = atsReportRepository;
+        _unitOfWork = unitOfWork;
     }
 
     private static readonly List<string> KnownSkills = new()
@@ -61,6 +72,7 @@ public class ATSService : IATSService
 
     public async Task<ATSAnalysisResponse> AnalyzeAsync(ATSAnalysisRequest request)
     {
+        // Resume
         var resume = await _resumeRepository
             .GetByIdWithVersionsAsync(request.ResumeId);
 
@@ -74,9 +86,17 @@ public class ATSService : IATSService
         if (latestVersion == null)
             throw new Exception("Resume version not found.");
 
+        // Job Description
+        var jobDescription = await _jobDescriptionRepository
+            .GetByIdAsync(request.JobDescriptionId);
+
+        if (jobDescription == null)
+            throw new Exception("Job Description not found.");
+
         var resumeText = latestVersion.ExtractedText;
 
-        var keywords = ExtractKeywords(request.JobDescription);
+        var keywords = ExtractKeywords(
+            jobDescription.Description);
 
         var matchedSkills = FindMatchedSkills(
             resumeText,
@@ -89,6 +109,24 @@ public class ATSService : IATSService
         var score = CalculateATSScore(
             matchedSkills.Count,
             keywords.Count);
+
+        // Save ATS Report
+        var report = new ATSReport
+        {
+            Id = Guid.NewGuid(),
+            ResumeVersionId = latestVersion.Id,
+            JobDescriptionId = jobDescription.Id,
+            AtsScore = score,
+            Summary =
+                $"ATS Score: {score}%{Environment.NewLine}" +
+                $"Matched Skills: {string.Join(", ", matchedSkills)}{Environment.NewLine}" +
+                $"Missing Skills: {string.Join(", ", missingSkills)}",
+            CreatedOnUtc = DateTime.UtcNow
+        };
+
+        await _atsReportRepository.AddAsync(report);
+
+        await _unitOfWork.SaveChangesAsync();
 
         return new ATSAnalysisResponse
         {
@@ -145,14 +183,14 @@ public class ATSService : IATSService
 
     public async Task<List<ATSReport>> GetReportsAsync(Guid resumeId)
     {
-        throw new NotImplementedException(
-            "ATS report history will be implemented in Chapter 8.");
+        return await _atsReportRepository
+            .GetByResumeIdAsync(resumeId);
     }
 
     public async Task<ATSReport?> GetLatestReportAsync(Guid resumeId)
     {
-        throw new NotImplementedException(
-            "Latest ATS report retrieval will be implemented in Chapter 8.");
+        return await _atsReportRepository
+            .GetLatestByResumeIdAsync(resumeId);
     }
 
 }

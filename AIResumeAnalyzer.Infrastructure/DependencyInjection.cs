@@ -11,6 +11,8 @@ using AIResumeAnalyzer.Application.Interfaces.ResumeParsing;
 using AIResumeAnalyzer.Infrastructure.Services.ResumeParsing;
 using AIResumeAnalyzer.Application.Interfaces.ATS;
 using AIResumeAnalyzer.Infrastructure.Services.ATS;
+using AIResumeAnalyzer.Application.Interfaces.Services;
+using AIResumeAnalyzer.Infrastructure.Services.JobDescription;
 
 namespace AIResumeAnalyzer.Infrastructure;
 
@@ -42,6 +44,10 @@ public static class DependencyInjection
         services.AddScoped<IATSService, ATSService>();
 
         services.AddScoped<IATSReportRepository, ATSReportRepository>();
+
+        services.AddScoped<IJobDescriptionRepository, JobDescriptionRepository>();
+
+        services.AddScoped<IJobDescriptionService, JobDescriptionService>();
 
         return services;
     }
