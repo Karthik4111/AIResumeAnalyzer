@@ -13,6 +13,8 @@ using AIResumeAnalyzer.Application.Interfaces.ATS;
 using AIResumeAnalyzer.Infrastructure.Services.ATS;
 using AIResumeAnalyzer.Application.Interfaces.Services;
 using AIResumeAnalyzer.Infrastructure.Services.JobDescription;
+using AIResumeAnalyzer.Application.Interfaces.AI;
+using AIResumeAnalyzer.Infrastructure.Services.AI;
 
 namespace AIResumeAnalyzer.Infrastructure;
 
@@ -48,6 +50,11 @@ public static class DependencyInjection
         services.AddScoped<IJobDescriptionRepository, JobDescriptionRepository>();
 
         services.AddScoped<IJobDescriptionService, JobDescriptionService>();
+
+        services.AddHttpClient<IAIService, OllamaService>(client =>
+        {
+            client.BaseAddress = new Uri("http://localhost:11434/");
+        });
 
         return services;
     }
