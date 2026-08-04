@@ -168,12 +168,15 @@ public class ResumeService : IResumeService
         if (version == null)
             throw new Exception("Resume not found.");
 
-        if (!File.Exists(version.FilePath))
+        if (string.IsNullOrWhiteSpace(version.FilePath))
+            throw new Exception("Resume file path is missing.");
+
+        if (!System.IO.File.Exists(version.FilePath))
             throw new Exception("Resume file not found.");
 
-        var bytes = await File.ReadAllBytesAsync(version.FilePath);
+        var bytes = await System.IO.File.ReadAllBytesAsync(version.FilePath);
 
-        var extension = Path.GetExtension(version.FileName).ToLower();
+        var extension = Path.GetExtension(version.FileName).ToLowerInvariant();
 
         var contentType = extension switch
         {

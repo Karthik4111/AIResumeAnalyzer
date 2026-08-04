@@ -59,35 +59,37 @@ public class ResumeController : ControllerBase
         return NoContent();
     }
 
-    [HttpGet("download/{id:guid}")]
-    public async Task<IActionResult> Download(Guid id)
+    [HttpGet("{resumeId:guid}/download")]
+    public async Task<IActionResult> Download(Guid resumeId)
     {
-        var file = await _resumeService.DownloadAsync(id);
+        var result = await _resumeService.DownloadAsync(resumeId);
 
         return File(
-            file.FileBytes,
-            file.ContentType,
-            file.FileName);
+            result.FileBytes,
+            result.ContentType,
+            result.FileName);
     }
 
-    [HttpPost("{id:guid}/version")]
+    [HttpPost("{resumeId:guid}/versions")]
     public async Task<IActionResult> UploadVersion(
-    Guid id,
+    Guid resumeId,
     [FromForm] UploadResumeVersionRequest request)
     {
-        var response =
-            await _resumeService.UploadVersionAsync(id, request);
+        var result = await _resumeService.UploadVersionAsync(
+            resumeId,
+            request);
 
-        return Ok(response);
+        return Ok(result);
     }
-
 
     [HttpGet("dashboard")]
     public async Task<IActionResult> Dashboard()
     {
-        var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+        var userId = Guid.Parse(
+            User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)!.Value);
 
-        var result = await _resumeService.GetDashboardAsync(userId);
+        var result =
+            await _resumeService.GetDashboardAsync(userId);
 
         return Ok(result);
     }

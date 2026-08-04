@@ -7,10 +7,12 @@ using AIResumeAnalyzer.Application.Interfaces.Services;
 using AIResumeAnalyzer.Application.Interfaces.Services;
 using AIResumeAnalyzer.Infrastructure.Persistence;
 using AIResumeAnalyzer.Infrastructure.Repositories;
+using AIResumeAnalyzer.Infrastructure.Services.Admin;
 using AIResumeAnalyzer.Infrastructure.Services.AI;
 using AIResumeAnalyzer.Infrastructure.Services.ATS;
 using AIResumeAnalyzer.Infrastructure.Services.CoverLetter;
 using AIResumeAnalyzer.Infrastructure.Services.Dashboard;
+using AIResumeAnalyzer.Infrastructure.Services.File;
 using AIResumeAnalyzer.Infrastructure.Services.JobDescription;
 using AIResumeAnalyzer.Infrastructure.Services.Recommendation;
 using AIResumeAnalyzer.Infrastructure.Services.Resume;
@@ -18,7 +20,6 @@ using AIResumeAnalyzer.Infrastructure.Services.ResumeParsing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using AIResumeAnalyzer.Infrastructure.Services.Admin;
 
 namespace AIResumeAnalyzer.Infrastructure;
 
@@ -85,6 +86,10 @@ public static class DependencyInjection
         services.AddScoped<IAdminRepository, AdminRepository>();
 
         services.AddScoped<IAdminService, AdminService>();
+
+        services.AddScoped<IFileRepository, FileRepository>();
+
+        services.AddScoped<IFileService, FileService>();
 
         return services;
     }
