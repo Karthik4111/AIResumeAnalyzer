@@ -128,11 +128,29 @@ JOB DESCRIPTION
 
     public async Task<List<CoverLetterResponse>> GetByResumeAsync(Guid resumeId)
     {
-        throw new NotImplementedException();
+        var coverLetters = await _coverLetterRepository.GetByResumeIdAsync(resumeId);
+
+        return coverLetters
+            .Select(x => new CoverLetterResponse
+            {
+                Id = x.Id,
+                Content = x.Content,
+                CreatedOn = x.CreatedOnUtc
+            })
+            .ToList();
     }
 
     public async Task DeleteAsync(Guid id)
     {
-        throw new NotImplementedException();
+        var coverLetter = await _coverLetterRepository
+            .GetByIdAsync(id);
+
+        if (coverLetter == null)
+            throw new Exception("Cover Letter not found.");
+
+        coverLetter.IsDeleted = true;
+        coverLetter.DeletedOnUtc = DateTime.UtcNow;
+
+        await _unitOfWork.SaveChangesAsync();
     }
 }
