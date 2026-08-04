@@ -1,20 +1,21 @@
+using AIResumeAnalyzer.Application.Interfaces.AI;
+using AIResumeAnalyzer.Application.Interfaces.ATS;
 using AIResumeAnalyzer.Application.Interfaces.Persistence;
 using AIResumeAnalyzer.Application.Interfaces.Repositories;
+using AIResumeAnalyzer.Application.Interfaces.ResumeParsing;
+using AIResumeAnalyzer.Application.Interfaces.Services;
+using AIResumeAnalyzer.Application.Interfaces.Services;
 using AIResumeAnalyzer.Infrastructure.Persistence;
 using AIResumeAnalyzer.Infrastructure.Repositories;
+using AIResumeAnalyzer.Infrastructure.Services.AI;
+using AIResumeAnalyzer.Infrastructure.Services.ATS;
+using AIResumeAnalyzer.Infrastructure.Services.CoverLetter;
+using AIResumeAnalyzer.Infrastructure.Services.JobDescription;
+using AIResumeAnalyzer.Infrastructure.Services.Resume;
+using AIResumeAnalyzer.Infrastructure.Services.ResumeParsing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using AIResumeAnalyzer.Application.Interfaces.Services;
-using AIResumeAnalyzer.Infrastructure.Services.Resume;
-using AIResumeAnalyzer.Application.Interfaces.ResumeParsing;
-using AIResumeAnalyzer.Infrastructure.Services.ResumeParsing;
-using AIResumeAnalyzer.Application.Interfaces.ATS;
-using AIResumeAnalyzer.Infrastructure.Services.ATS;
-using AIResumeAnalyzer.Application.Interfaces.Services;
-using AIResumeAnalyzer.Infrastructure.Services.JobDescription;
-using AIResumeAnalyzer.Application.Interfaces.AI;
-using AIResumeAnalyzer.Infrastructure.Services.AI;
 
 namespace AIResumeAnalyzer.Infrastructure;
 
@@ -57,6 +58,13 @@ public static class DependencyInjection
         });
 
         services.AddScoped<IInterviewQuestionRepository, InterviewQuestionRepository>();
+
+        services.AddScoped<ICoverLetterRepository, CoverLetterRepository>();
+
+        services.AddHttpClient<ICoverLetterService, CoverLetterService>(client =>
+        {
+            client.BaseAddress = new Uri("http://localhost:11434/");
+        });
 
         return services;
     }
