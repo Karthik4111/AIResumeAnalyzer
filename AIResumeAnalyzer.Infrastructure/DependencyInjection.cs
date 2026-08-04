@@ -1,3 +1,4 @@
+using AIResumeAnalyzer.Application.Configuration;
 using AIResumeAnalyzer.Application.Interfaces.AI;
 using AIResumeAnalyzer.Application.Interfaces.ATS;
 using AIResumeAnalyzer.Application.Interfaces.Persistence;
@@ -12,6 +13,7 @@ using AIResumeAnalyzer.Infrastructure.Services.AI;
 using AIResumeAnalyzer.Infrastructure.Services.ATS;
 using AIResumeAnalyzer.Infrastructure.Services.CoverLetter;
 using AIResumeAnalyzer.Infrastructure.Services.Dashboard;
+using AIResumeAnalyzer.Infrastructure.Services.Email;
 using AIResumeAnalyzer.Infrastructure.Services.File;
 using AIResumeAnalyzer.Infrastructure.Services.JobDescription;
 using AIResumeAnalyzer.Infrastructure.Services.Recommendation;
@@ -20,6 +22,8 @@ using AIResumeAnalyzer.Infrastructure.Services.ResumeParsing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using AIResumeAnalyzer.Application.Configuration;
+using AIResumeAnalyzer.Infrastructure.Services.Email;
 
 namespace AIResumeAnalyzer.Infrastructure;
 
@@ -90,6 +94,10 @@ public static class DependencyInjection
         services.AddScoped<IFileRepository, FileRepository>();
 
         services.AddScoped<IFileService, FileService>();
+
+        services.Configure<EmailSettings>(configuration.GetSection("EmailSettings"));
+
+        services.AddScoped<IEmailService, EmailService>();
 
         return services;
     }
