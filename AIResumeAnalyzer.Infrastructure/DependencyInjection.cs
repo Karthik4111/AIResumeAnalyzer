@@ -11,6 +11,7 @@ using AIResumeAnalyzer.Infrastructure.Services.AI;
 using AIResumeAnalyzer.Infrastructure.Services.ATS;
 using AIResumeAnalyzer.Infrastructure.Services.CoverLetter;
 using AIResumeAnalyzer.Infrastructure.Services.JobDescription;
+using AIResumeAnalyzer.Infrastructure.Services.Recommendation;
 using AIResumeAnalyzer.Infrastructure.Services.Resume;
 using AIResumeAnalyzer.Infrastructure.Services.ResumeParsing;
 using Microsoft.EntityFrameworkCore;
@@ -62,6 +63,13 @@ public static class DependencyInjection
         services.AddScoped<ICoverLetterRepository, CoverLetterRepository>();
 
         services.AddHttpClient<ICoverLetterService, CoverLetterService>(client =>
+        {
+            client.BaseAddress = new Uri("http://localhost:11434/");
+        });
+
+        services.AddScoped<IRecommendationRepository, RecommendationRepository>();
+
+        services.AddHttpClient<IRecommendationService, RecommendationService>(client =>
         {
             client.BaseAddress = new Uri("http://localhost:11434/");
         });
