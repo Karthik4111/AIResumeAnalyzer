@@ -10,6 +10,7 @@ using AIResumeAnalyzer.Infrastructure.Repositories;
 using AIResumeAnalyzer.Infrastructure.Services.AI;
 using AIResumeAnalyzer.Infrastructure.Services.ATS;
 using AIResumeAnalyzer.Infrastructure.Services.CoverLetter;
+using AIResumeAnalyzer.Infrastructure.Services.Dashboard;
 using AIResumeAnalyzer.Infrastructure.Services.JobDescription;
 using AIResumeAnalyzer.Infrastructure.Services.Recommendation;
 using AIResumeAnalyzer.Infrastructure.Services.Resume;
@@ -73,6 +74,10 @@ public static class DependencyInjection
         {
             client.BaseAddress = new Uri("http://localhost:11434/");
         });
+
+        services.AddScoped<IDashboardRepository, DashboardRepository>();
+
+        services.AddScoped<IDashboardService, DashboardService>();
 
         return services;
     }
