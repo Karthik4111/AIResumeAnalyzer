@@ -18,6 +18,7 @@ using AIResumeAnalyzer.Infrastructure.Services.ResumeParsing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using AIResumeAnalyzer.Infrastructure.Services.Admin;
 
 namespace AIResumeAnalyzer.Infrastructure;
 
@@ -78,6 +79,12 @@ public static class DependencyInjection
         services.AddScoped<IDashboardRepository, DashboardRepository>();
 
         services.AddScoped<IDashboardService, DashboardService>();
+
+        services.AddScoped<IAdminRepository, AdminRepository>();
+
+        services.AddScoped<IAdminRepository, AdminRepository>();
+
+        services.AddScoped<IAdminService, AdminService>();
 
         return services;
     }
