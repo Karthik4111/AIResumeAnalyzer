@@ -4,6 +4,7 @@ using AIResumeAnalyzer.Application.Interfaces.Repositories;
 using AIResumeAnalyzer.Application.Interfaces.ResumeParsing;
 using AIResumeAnalyzer.Application.Interfaces.Services;
 using AIResumeAnalyzer.Domain.Enums;
+using AIResumeAnalyzer.Application.Interfaces.Services;
 
 namespace AIResumeAnalyzer.Infrastructure.Services.Resume;
 
@@ -13,17 +14,19 @@ public class ResumeService : IResumeService
     private readonly IResumeVersionRepository _resumeVersionRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IResumeParserService _resumeParserService;
+    private readonly ICacheService _cacheService;
 
     public ResumeService(
         IResumeRepository resumeRepository,
         IResumeVersionRepository resumeVersionRepository,
         IResumeParserService resumeParserService,
-        IUnitOfWork unitOfWork)
+        IUnitOfWork unitOfWork, ICacheService cacheService,)
     {
         _resumeRepository = resumeRepository;
         _resumeVersionRepository = resumeVersionRepository;
         _resumeParserService = resumeParserService;
         _unitOfWork = unitOfWork;
+        _cacheService = cacheService;
     }
 
     public async Task<ResumeResponse> UploadAsync(
@@ -96,6 +99,8 @@ public class ResumeService : IResumeService
 
         await _unitOfWork.SaveChangesAsync();
 
+        await _cacheService.RemoveAsync($"resume_{resume.Id}");
+
         return new ResumeResponse
         {
             Id = resume.Id,
@@ -129,6 +134,16 @@ public class ResumeService : IResumeService
 
     public async Task<ResumeResponse?> GetByIdAsync(Guid resumeId)
     {
+        var cacheKey = $"resume_{resumeId}";
+
+        var cachedResume =
+            await _cacheService.GetAsync<ResumeResponse>(cacheKey);
+
+        if (cachedResume != null)
+        {
+            return cachedResume;
+        }
+
         var resume = await _resumeRepository.GetByIdWithVersionsAsync(resumeId);
 
         if (resume == null)
@@ -138,7 +153,7 @@ public class ResumeService : IResumeService
             .OrderByDescending(v => v.VersionNumber)
             .FirstOrDefault();
 
-        return new ResumeResponse
+        var response = new ResumeResponse
         {
             Id = resume.Id,
             FileName = latestVersion?.FileName ?? string.Empty,
@@ -146,6 +161,13 @@ public class ResumeService : IResumeService
             Version = latestVersion?.VersionNumber ?? 0,
             UploadedOn = latestVersion?.CreatedOnUtc ?? resume.CreatedOnUtc
         };
+
+        await _cacheService.SetAsync(
+            cacheKey,
+            response,
+            TimeSpan.FromMinutes(10));
+
+        return response;
     }
 
     public async Task DeleteAsync(Guid resumeId)
@@ -188,9 +210,7 @@ public class ResumeService : IResumeService
         return (bytes, version.FileName, contentType);
     }
 
-    public async Task<ResumeResponse> UploadVersionAsync(
-        Guid resumeId,
-        UploadResumeVersionRequest request)
+    public async Task<ResumeResponse> UploadVersionAsync(Guid resumeId,UploadResumeVersionRequest request)
     {
         var resume = await _resumeRepository.GetByIdAsync(resumeId);
 
@@ -252,6 +272,11 @@ public class ResumeService : IResumeService
 
         await _unitOfWork.SaveChangesAsync();
 
+        // Clear dashboard cache
+        await _cacheService.RemoveAsync($"dashboard_{resume.UserId}");
+
+        await _cacheService.RemoveAsync($"resume_{resumeId}");
+
         return new ResumeResponse
         {
             Id = resumeId,
@@ -264,9 +289,19 @@ public class ResumeService : IResumeService
 
     public async Task<List<ResumeDashboardResponse>> GetDashboardAsync(Guid userId)
     {
+        var cacheKey = $"dashboard_{userId}";
+
+        var cachedData =
+            await _cacheService.GetAsync<List<ResumeDashboardResponse>>(cacheKey);
+
+        if (cachedData != null)
+        {
+            return cachedData;
+        }
+
         var resumes = await _resumeRepository.GetByUserIdAsync(userId);
 
-        return resumes.Select(r =>
+        var dashboard = resumes.Select(r =>
         {
             var latestVersion = r.Versions
                 .OrderByDescending(v => v.VersionNumber)
@@ -281,5 +316,12 @@ public class ResumeService : IResumeService
                 UploadedOn = latestVersion?.CreatedOnUtc ?? r.CreatedOnUtc
             };
         }).ToList();
+
+        await _cacheService.SetAsync(
+            cacheKey,
+            dashboard,
+            TimeSpan.FromMinutes(5));
+
+        return dashboard;
     }
 }

@@ -29,6 +29,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using AIResumeAnalyzer.Infrastructure.BackgroundServices;
+using AIResumeAnalyzer.Infrastructure.Services.Cache;
 
 namespace AIResumeAnalyzer.Infrastructure;
 
@@ -109,6 +110,8 @@ public static class DependencyInjection
         services.AddScoped<IPdfService, PdfService>();
 
         services.AddHostedService<ResumeCleanupBackgroundService>();
+
+        services.AddScoped<ICacheService, MemoryCacheService>();
 
         return services;
     }

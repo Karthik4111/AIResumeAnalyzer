@@ -37,6 +37,8 @@ namespace AIResumeAnalyzer.API
             // Add Controllers
             builder.Services.AddControllers();
 
+            builder.Services.AddMemoryCache();
+
             // Swagger
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen(options =>
