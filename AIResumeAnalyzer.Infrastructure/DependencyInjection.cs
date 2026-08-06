@@ -25,6 +25,8 @@ using AIResumeAnalyzer.Infrastructure.Services.ResumeParsing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using AIResumeAnalyzer.Application.Interfaces.Common;
+using AIResumeAnalyzer.Infrastructure.Services.Logging;
 
 namespace AIResumeAnalyzer.Infrastructure;
 
@@ -44,6 +46,8 @@ public static class DependencyInjection
         services.AddScoped<IRoleRepository, RoleRepository>();
 
         services.AddScoped<IUnitOfWork, UnitOfWork>();
+
+        services.AddScoped(typeof(IAppLogger<>), typeof(AppLogger<>));
 
         services.AddScoped<IResumeService, ResumeService>();
 

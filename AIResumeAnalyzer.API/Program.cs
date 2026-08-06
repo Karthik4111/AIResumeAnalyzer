@@ -5,9 +5,9 @@ using AIResumeAnalyzer.Domain.Common;
 using AIResumeAnalyzer.Infrastructure;
 using AIResumeAnalyzer.Infrastructure.Services.Auth;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using AIResumeAnalyzer.API.Middleware;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using Serilog;
 using System.Security.Claims;
 using System.Text;
 
@@ -18,6 +18,21 @@ namespace AIResumeAnalyzer.API
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
+
+            // Configure Serilog
+            builder.Host.UseSerilog((context, services, configuration) =>
+            {
+                configuration
+                    .ReadFrom.Configuration(context.Configuration)
+                    .ReadFrom.Services(services)
+                    .Enrich.FromLogContext()
+                    .WriteTo.Console()
+                    .WriteTo.File(
+                        Path.Combine(AppContext.BaseDirectory, "Logs", "log-.txt"),
+                        rollingInterval: RollingInterval.Day,
+                        retainedFileCountLimit: 30,
+                        shared: true);
+            });
 
             // Add Controllers
             builder.Services.AddControllers();
@@ -40,7 +55,6 @@ namespace AIResumeAnalyzer.API
                     Type = SecuritySchemeType.Http,
                     Scheme = "bearer",
                     Description = "Enter JWT Bearer token",
-
                     Reference = new OpenApiReference
                     {
                         Id = "Bearer",
@@ -52,10 +66,7 @@ namespace AIResumeAnalyzer.API
 
                 options.AddSecurityRequirement(new OpenApiSecurityRequirement
                 {
-                    {
-                        jwtSecurityScheme,
-                        Array.Empty<string>()
-                    }
+                    { jwtSecurityScheme, Array.Empty<string>() }
                 });
             });
 
@@ -67,20 +78,6 @@ namespace AIResumeAnalyzer.API
             builder.Services.Configure<JwtOptions>(
                 builder.Configuration.GetSection(JwtOptions.SectionName));
 
-            // DEBUG - Verify JWT Configuration
-            var jwtConfig = builder.Configuration
-                .GetSection(JwtOptions.SectionName)
-                .Get<JwtOptions>();
-
-            Console.WriteLine("======================================");
-            Console.WriteLine("JWT Configuration");
-            Console.WriteLine("======================================");
-            Console.WriteLine($"Issuer     : {jwtConfig?.Issuer}");
-            Console.WriteLine($"Audience   : {jwtConfig?.Audience}");
-            Console.WriteLine($"Secret Key : {jwtConfig?.SecretKey}");
-            Console.WriteLine($"Expiry     : {jwtConfig?.ExpiryMinutes}");
-            Console.WriteLine("======================================");
-
             // Dependency Injection
             builder.Services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
             builder.Services.AddScoped<IPasswordHasher, PasswordHasher>();
@@ -88,64 +85,65 @@ namespace AIResumeAnalyzer.API
 
             // JWT Authentication
             builder.Services
-    .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddJwtBearer(options =>
-    {
-        var jwt = builder.Configuration
-            .GetSection(JwtOptions.SectionName)
-            .Get<JwtOptions>()!;
+                .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+                .AddJwtBearer(options =>
+                {
+                    var jwt = builder.Configuration
+                        .GetSection(JwtOptions.SectionName)
+                        .Get<JwtOptions>()!;
 
-        options.RequireHttpsMetadata = false;
-        options.SaveToken = true;
+                    options.RequireHttpsMetadata = false;
+                    options.SaveToken = true;
 
-        options.TokenValidationParameters = new TokenValidationParameters
-        {
-            ValidateIssuer = true,
-            ValidateAudience = true,
-            ValidateLifetime = true,
-            ValidateIssuerSigningKey = true,
+                    options.TokenValidationParameters = new TokenValidationParameters
+                    {
+                        ValidateIssuer = true,
+                        ValidateAudience = true,
+                        ValidateLifetime = true,
+                        ValidateIssuerSigningKey = true,
 
-            ValidIssuer = jwt.Issuer,
-            ValidAudience = jwt.Audience,
-            IssuerSigningKey = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(jwt.SecretKey)),
+                        ValidIssuer = jwt.Issuer,
+                        ValidAudience = jwt.Audience,
+                        IssuerSigningKey = new SymmetricSecurityKey(
+                            Encoding.UTF8.GetBytes(jwt.SecretKey)),
 
-            ClockSkew = TimeSpan.Zero,
+                        ClockSkew = TimeSpan.Zero,
+                        NameClaimType = ClaimTypes.Name,
+                        RoleClaimType = ClaimTypes.Role
+                    };
+                });
 
-            NameClaimType = ClaimTypes.Name,
-            RoleClaimType = ClaimTypes.Role
-        };
-    });
-
-            // Authorization Policies
+            // Authorization
             builder.Services.AddAuthorization(options =>
             {
-                options.AddPolicy("AdminOnly", policy =>
-                    policy.RequireRole("Admin"));
-
-                options.AddPolicy("CandidateOnly", policy =>
-                    policy.RequireRole("Candidate"));
-
-                options.AddPolicy("RecruiterOnly", policy =>
-                    policy.RequireRole("Recruiter"));
+                options.AddPolicy("AdminOnly", policy => policy.RequireRole("Admin"));
+                options.AddPolicy("CandidateOnly", policy => policy.RequireRole("Candidate"));
+                options.AddPolicy("RecruiterOnly", policy => policy.RequireRole("Recruiter"));
             });
 
             var app = builder.Build();
 
-            // Configure HTTP Pipeline
             if (app.Environment.IsDevelopment())
             {
                 app.UseSwagger();
                 app.UseSwaggerUI();
             }
 
+            app.UseSerilogRequestLogging();
+
+            app.UseRequestLogging();
+
             app.UseGlobalExceptionHandler();
+
             app.UseHttpsRedirection();
 
             app.UseAuthentication();
+
             app.UseAuthorization();
 
             app.MapControllers();
+
+            Log.Information("AI Resume Analyzer API started successfully.");
 
             app.Run();
         }
