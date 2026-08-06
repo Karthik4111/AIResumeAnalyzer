@@ -2,11 +2,13 @@ using AIResumeAnalyzer.Application.Configuration;
 using AIResumeAnalyzer.Application.Configuration;
 using AIResumeAnalyzer.Application.Interfaces.AI;
 using AIResumeAnalyzer.Application.Interfaces.ATS;
+using AIResumeAnalyzer.Application.Interfaces.Common;
 using AIResumeAnalyzer.Application.Interfaces.Persistence;
 using AIResumeAnalyzer.Application.Interfaces.Repositories;
 using AIResumeAnalyzer.Application.Interfaces.ResumeParsing;
 using AIResumeAnalyzer.Application.Interfaces.Services;
 using AIResumeAnalyzer.Application.Interfaces.Services;
+using AIResumeAnalyzer.Infrastructure.BackgroundServices;
 using AIResumeAnalyzer.Infrastructure.Persistence;
 using AIResumeAnalyzer.Infrastructure.Repositories;
 using AIResumeAnalyzer.Infrastructure.Services.Admin;
@@ -18,6 +20,7 @@ using AIResumeAnalyzer.Infrastructure.Services.Email;
 using AIResumeAnalyzer.Infrastructure.Services.Email;
 using AIResumeAnalyzer.Infrastructure.Services.File;
 using AIResumeAnalyzer.Infrastructure.Services.JobDescription;
+using AIResumeAnalyzer.Infrastructure.Services.Logging;
 using AIResumeAnalyzer.Infrastructure.Services.Pdf;
 using AIResumeAnalyzer.Infrastructure.Services.Recommendation;
 using AIResumeAnalyzer.Infrastructure.Services.Resume;
@@ -25,8 +28,7 @@ using AIResumeAnalyzer.Infrastructure.Services.ResumeParsing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using AIResumeAnalyzer.Application.Interfaces.Common;
-using AIResumeAnalyzer.Infrastructure.Services.Logging;
+using AIResumeAnalyzer.Infrastructure.BackgroundServices;
 
 namespace AIResumeAnalyzer.Infrastructure;
 
@@ -105,6 +107,8 @@ public static class DependencyInjection
         services.AddScoped<IEmailService, EmailService>();
 
         services.AddScoped<IPdfService, PdfService>();
+
+        services.AddHostedService<ResumeCleanupBackgroundService>();
 
         return services;
     }
