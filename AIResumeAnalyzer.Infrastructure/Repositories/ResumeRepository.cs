@@ -34,4 +34,22 @@ public class ResumeRepository
         return await _context.Resumes
             .FirstOrDefaultAsync(r => r.Id == resumeId);
     }
+
+    public async Task<List<Resume>> GetExpiredSoftDeletedResumesAsync(int days)
+    {
+        var cutoffDate = DateTime.UtcNow.AddDays(-days);
+
+        return await _context.Resumes
+            .Where(r =>
+                r.IsDeleted &&
+                r.DeletedOnUtc != null &&
+                r.DeletedOnUtc <= cutoffDate)
+            .Include(r => r.Versions)
+            .ToListAsync();
+    }
+
+    public void Delete(Resume resume)
+    {
+        _context.Resumes.Remove(resume);
+    }
 }
