@@ -2,13 +2,17 @@
 using AIResumeAnalyzer.Application.Interfaces.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using System.Security.Claims;
 
 namespace AIResumeAnalyzer.API.Controllers.Resume;
 
+
+
 [ApiController]
 [Route("api/[controller]")]
 [Authorize]
+[EnableRateLimiting("DefaultPolicy")]
 public class ResumeController : ControllerBase
 {
     private readonly IResumeService _resumeService;

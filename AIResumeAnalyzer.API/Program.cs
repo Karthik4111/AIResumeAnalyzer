@@ -5,11 +5,15 @@ using AIResumeAnalyzer.Domain.Common;
 using AIResumeAnalyzer.Infrastructure;
 using AIResumeAnalyzer.Infrastructure.Services.Auth;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Serilog;
 using System.Security.Claims;
 using System.Text;
+using System.Threading.RateLimiting;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
+using AIResumeAnalyzer.Infrastructure.Persistence;
 
 namespace AIResumeAnalyzer.API
 {
@@ -38,6 +42,29 @@ namespace AIResumeAnalyzer.API
             builder.Services.AddControllers();
 
             builder.Services.AddMemoryCache();
+
+            builder.Services.AddRateLimiter(options =>
+            {
+                options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+
+                options.AddFixedWindowLimiter("LoginPolicy", limiterOptions =>
+                {
+                    limiterOptions.PermitLimit = 5;
+                    limiterOptions.Window = TimeSpan.FromMinutes(1);
+                    limiterOptions.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+                    limiterOptions.QueueLimit = 0;
+                });
+
+                options.AddFixedWindowLimiter("DefaultPolicy", limiterOptions =>
+                {
+                    limiterOptions.PermitLimit = 100;
+                    limiterOptions.Window = TimeSpan.FromMinutes(1);
+                    limiterOptions.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+                    limiterOptions.QueueLimit = 10;
+                });
+            });
+
+            builder.Services.AddHealthChecks().AddDbContextCheck<ApplicationDbContext>();
 
             // Swagger
             builder.Services.AddEndpointsApiExplorer();
@@ -139,13 +166,19 @@ namespace AIResumeAnalyzer.API
 
             app.UseHttpsRedirection();
 
+            app.UseRateLimiter();
+
             app.UseAuthentication();
 
             app.UseAuthorization();
 
             app.MapControllers();
 
+
+            app.MapHealthChecks("/health");
+
             Log.Information("AI Resume Analyzer API started successfully.");
+
 
             app.Run();
         }

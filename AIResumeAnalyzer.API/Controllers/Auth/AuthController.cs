@@ -1,6 +1,7 @@
 using AIResumeAnalyzer.Application.DTOs.Auth;
 using AIResumeAnalyzer.Application.Interfaces.Auth;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace AIResumeAnalyzer.API.Controllers;
 
@@ -22,6 +23,8 @@ public class AuthController : ControllerBase
         return Ok(result);
     }
 
+
+    [EnableRateLimiting("LoginPolicy")]
     [HttpPost("login")]
     public async Task<IActionResult> Login(LoginRequest request)
     {

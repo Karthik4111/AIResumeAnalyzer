@@ -17,10 +17,11 @@ public class ResumeService : IResumeService
     private readonly ICacheService _cacheService;
 
     public ResumeService(
-        IResumeRepository resumeRepository,
-        IResumeVersionRepository resumeVersionRepository,
-        IResumeParserService resumeParserService,
-        IUnitOfWork unitOfWork, ICacheService cacheService,)
+    IResumeRepository resumeRepository,
+    IResumeVersionRepository resumeVersionRepository,
+    IResumeParserService resumeParserService,
+    IUnitOfWork unitOfWork,
+    ICacheService cacheService)
     {
         _resumeRepository = resumeRepository;
         _resumeVersionRepository = resumeVersionRepository;
@@ -99,6 +100,7 @@ public class ResumeService : IResumeService
 
         await _unitOfWork.SaveChangesAsync();
 
+        await _cacheService.RemoveAsync($"dashboard_{userId}");
         await _cacheService.RemoveAsync($"resume_{resume.Id}");
 
         return new ResumeResponse
@@ -181,6 +183,10 @@ public class ResumeService : IResumeService
         resume.DeletedOnUtc = DateTime.UtcNow;
 
         await _unitOfWork.SaveChangesAsync();
+
+
+        await _cacheService.RemoveAsync($"dashboard_{resume.UserId}");
+        await _cacheService.RemoveAsync($"resume_{resumeId}");
     }
 
     public async Task<(byte[] FileBytes, string FileName, string ContentType)> DownloadAsync(Guid resumeId)
