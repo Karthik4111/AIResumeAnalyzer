@@ -2,28 +2,30 @@ import { Box, Typography } from "@mui/material";
 import { Navigate, Route, Routes } from "react-router-dom";
 
 import LoginPage from "./pages/auth/LoginPage";
-import ProtectedRoute from "./routes/ProtectedRoute";
 import DashboardPage from "./pages/dashboard/DashboardPage";
+
+import ProtectedRoute from "./routes/ProtectedRoute";
+import AppLayout from "./components/layout/AppLayout";
 
 interface PlaceholderPageProps {
   title: string;
 }
 
-function PlaceholderPage({ title }: PlaceholderPageProps) {
+function PlaceholderPage({
+  title,
+}: PlaceholderPageProps) {
   return (
     <Box
       sx={{
-        minHeight: "100vh",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        flexDirection: "column",
-        gap: 1,
+        p: 4,
       }}
     >
       <Typography
         variant="h4"
-        sx={{ fontWeight: 700 }}
+        sx={{
+          fontWeight: 700,
+          mb: 1,
+        }}
       >
         {title}
       </Typography>
@@ -38,8 +40,9 @@ function PlaceholderPage({ title }: PlaceholderPageProps) {
 function App() {
   return (
     <Routes>
-
-      {/* Public Routes */}
+      {/* =====================================================
+          Public Routes
+          ===================================================== */}
 
       <Route
         path="/login"
@@ -53,61 +56,90 @@ function App() {
         }
       />
 
-      {/* Protected Routes */}
+      {/* =====================================================
+          Protected Routes
+          ===================================================== */}
 
       <Route element={<ProtectedRoute />}>
+        <Route element={<AppLayout />}>
 
-        <Route
-          path="/dashboard"
-          element={<DashboardPage />}
-        />
+          {/* Dashboard */}
 
-        <Route
-          path="/resumes"
-          element={
-            <PlaceholderPage title="Resume Management" />
-          }
-        />
+          <Route
+            path="/dashboard"
+            element={<DashboardPage />}
+          />
 
-        <Route
-          path="/ats"
-          element={
-            <PlaceholderPage title="ATS Analysis" />
-          }
-        />
+          {/* Resume Management */}
 
-        <Route
-          path="/cover-letter"
-          element={
-            <PlaceholderPage title="Cover Letter" />
-          }
-        />
+          <Route
+            path="/resumes"
+            element={
+              <PlaceholderPage
+                title="Resume Management"
+              />
+            }
+          />
 
-        <Route
-          path="/interview"
-          element={
-            <PlaceholderPage title="Interview Questions" />
-          }
-        />
+          {/* ATS Analysis */}
 
+          <Route
+            path="/ats"
+            element={
+              <PlaceholderPage
+                title="ATS Analysis"
+              />
+            }
+          />
+
+          {/* Cover Letter */}
+
+          <Route
+            path="/cover-letter"
+            element={
+              <PlaceholderPage
+                title="Cover Letter"
+              />
+            }
+          />
+
+          {/* Interview */}
+
+          <Route
+            path="/interview"
+            element={
+              <PlaceholderPage
+                title="Interview Questions"
+              />
+            }
+          />
+
+        </Route>
       </Route>
 
-      {/* Default */}
+      {/* =====================================================
+          Default Routes
+          ===================================================== */}
 
       <Route
         path="/"
         element={
-          <Navigate to="/login" replace />
+          <Navigate
+            to="/login"
+            replace
+          />
         }
       />
 
       <Route
         path="*"
         element={
-          <Navigate to="/login" replace />
+          <Navigate
+            to="/login"
+            replace
+          />
         }
       />
-
     </Routes>
   );
 }
