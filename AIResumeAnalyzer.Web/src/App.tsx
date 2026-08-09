@@ -1,7 +1,15 @@
 import { Box, Typography } from "@mui/material";
 import { Navigate, Route, Routes } from "react-router-dom";
 
-function PlaceholderPage({ title }: { title: string }) {
+import LoginPage from "./pages/auth/LoginPage";
+import ProtectedRoute from "./routes/ProtectedRoute";
+import DashboardPage from "./pages/dashboard/DashboardPage";
+
+interface PlaceholderPageProps {
+  title: string;
+}
+
+function PlaceholderPage({ title }: PlaceholderPageProps) {
   return (
     <Box
       sx={{
@@ -13,7 +21,10 @@ function PlaceholderPage({ title }: { title: string }) {
         gap: 1,
       }}
     >
-      <Typography variant="h4" fontWeight={700}>
+      <Typography
+        variant="h4"
+        sx={{ fontWeight: 700 }}
+      >
         {title}
       </Typography>
 
@@ -27,50 +38,76 @@ function PlaceholderPage({ title }: { title: string }) {
 function App() {
   return (
     <Routes>
+
+      {/* Public Routes */}
+
       <Route
         path="/login"
-        element={<PlaceholderPage title="Login" />}
+        element={<LoginPage />}
       />
 
       <Route
         path="/register"
-        element={<PlaceholderPage title="Register" />}
+        element={
+          <PlaceholderPage title="Register" />
+        }
       />
 
-      <Route
-        path="/dashboard"
-        element={<PlaceholderPage title="Dashboard" />}
-      />
+      {/* Protected Routes */}
 
-      <Route
-        path="/resumes"
-        element={<PlaceholderPage title="Resume Management" />}
-      />
+      <Route element={<ProtectedRoute />}>
 
-      <Route
-        path="/ats"
-        element={<PlaceholderPage title="ATS Analysis" />}
-      />
+        <Route
+          path="/dashboard"
+          element={<DashboardPage />}
+        />
 
-      <Route
-        path="/cover-letter"
-        element={<PlaceholderPage title="Cover Letter" />}
-      />
+        <Route
+          path="/resumes"
+          element={
+            <PlaceholderPage title="Resume Management" />
+          }
+        />
 
-      <Route
-        path="/interview"
-        element={<PlaceholderPage title="Interview Questions" />}
-      />
+        <Route
+          path="/ats"
+          element={
+            <PlaceholderPage title="ATS Analysis" />
+          }
+        />
+
+        <Route
+          path="/cover-letter"
+          element={
+            <PlaceholderPage title="Cover Letter" />
+          }
+        />
+
+        <Route
+          path="/interview"
+          element={
+            <PlaceholderPage title="Interview Questions" />
+          }
+        />
+
+      </Route>
+
+      {/* Default */}
 
       <Route
         path="/"
-        element={<Navigate to="/login" replace />}
+        element={
+          <Navigate to="/login" replace />
+        }
       />
 
       <Route
         path="*"
-        element={<Navigate to="/login" replace />}
+        element={
+          <Navigate to="/login" replace />
+        }
       />
+
     </Routes>
   );
 }
