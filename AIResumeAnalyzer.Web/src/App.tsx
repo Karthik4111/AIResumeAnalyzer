@@ -7,6 +7,9 @@ import DashboardPage from "./pages/dashboard/DashboardPage";
 import ProtectedRoute from "./routes/ProtectedRoute";
 import AppLayout from "./components/layout/AppLayout";
 
+import RegisterPage from "./pages/auth/RegisterPage";
+
+
 interface PlaceholderPageProps {
   title: string;
 }
@@ -50,11 +53,9 @@ function App() {
       />
 
       <Route
-        path="/register"
-        element={
-          <PlaceholderPage title="Register" />
-        }
-      />
+  path="/register"
+  element={<RegisterPage />}
+/>
 
       {/* =====================================================
           Protected Routes
